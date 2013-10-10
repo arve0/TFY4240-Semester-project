@@ -17,7 +17,7 @@ You are out walking at night with your mother during your christmas holiday. Sud
 
 (5) Load some of those files4 and make some beautiful curve plots showing a projection of the particles’ trajectory into your choice of the xy, xz, and yz planes (or any other convenient plane). (It is also possible to make 3D plots, but this is not a requirement. Often, such plots are very difficult to read on paper.)
 
-1. Euler’s method is described in some detail here: http://en.wikipedia.org/ wiki/Euler_method
+1. Euler’s method is described in some detail here: http://en.wikipedia.org/wiki/Euler_method
 2. Hint: magnetic fields do no work! See Griffiths, Eq. 5.11.
 3. Hint: http://tinyurl.com/284gwez
 4. Hint: http://tinyurl.com/2dq9spn
