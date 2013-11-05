@@ -37,15 +37,11 @@ del x, y
 
 E = special.ellipe((4 * radius * rho)/( (radius + rho)**2 + z**2))
 K = special.ellipk((4 * radius * rho)/( (radius + rho)**2 + z**2))
-Bz =  1/np.sqrt((radius + rho)**2 + z**2) * (
-                K
-                + E * (radius**2 - rho**2 - z**2)/((radius - rho)**2 + z**2)
-            )
-Brho = z/(rho*np.sqrt((radius + rho)**2 + z**2)) * (
-                -K
-                + E * (radius**2 + rho**2 + z**2)/((radius - rho)**2 + z**2)
-            )
+Bz =  1 / np.sqrt((radius + rho)**2 + z**2) * ( K + E * (radius**2 - rho**2 - z**2)/((radius - rho)**2 + z**2) )
+Brho = z/(rho*np.sqrt((radius + rho)**2 + z**2)) * ( -K + E * (radius**2 + rho**2 + z**2)/((radius - rho)**2 + z**2) )
+
 del E, K, z, rho
+
 # On the axis of the coil we get a divided by zero. This returns a
 # NaN, where the field is actually zero :
 Brho[np.isnan(Brho)] = 0
