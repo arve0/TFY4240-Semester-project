@@ -2,3 +2,4 @@
 *.swo
 src/*.pdf
 *.swn
+examples/*
