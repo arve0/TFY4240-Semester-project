@@ -7,4 +7,4 @@ if [ $# -eq 0 ]
     exit 1
 fi
 
-ffmpeg -i %d.png -c:v libx264 -pix_fmt yuv420p $1
+ffmpeg -i %d.png -c:v libx264 -b:v 2000k -preset veryslow -pix_fmt yuv420p $1
