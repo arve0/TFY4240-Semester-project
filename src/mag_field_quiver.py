@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 'A model of the earth and its magnetic field, with earth center as origin.'
 
+from __future__ import division # avoid integer division
 import numpy as np
 import mayavi
 from mayavi.mlab import *
-from mayavi.api import Engine
-
 
 def makeRcoordinates(x,y,z):
     '''Makes r length and r^hat from coordinates'''
@@ -31,20 +30,24 @@ def calcBfield(r, x_hat, y_hat, z_hat, m, mr):
     bz[np.isnan(bz)] = 0
     return bx, by, bz
 
-# constants from wikipedia
-earthRadius = 12
-sunEarthRadius = 150e6
-magnetosphere = 65          # http://en.wikipedia.org/wiki/Magnetosphere
-sunRadius = 109*earthRadius # http://en.wikipedia.org/wiki/Sun
+# Constants
+earthRadius = 10      # outer core about 5e3km below surface -> ratio m/r~0.2
+m = np.array([-2*np.sin(13./180*np.pi),0,2*np.cos(13./180*np.pi)]) # rot tilt ~23deg, mag tilt ~10deg from rot -> ~13deg from z-axis
 
 # Create grid
-n = 13. # 0.5x number of steps
+n = 13 # 0.5x number of steps
 steps = earthRadius / n
 x,y,z = np.mgrid[-2*earthRadius:2*earthRadius:steps,-2*earthRadius:2*earthRadius:steps,-2*earthRadius:2*earthRadius:steps]
 r,x_hat,y_hat,z_hat = makeRcoordinates(x,y,z)
 
+# create earth
+theta, phi = np.mgrid[0:np.pi:11j, 0:np.pi*2:21j]
+ex = earthRadius * np.sin(theta) * np.cos(phi)
+ey = earthRadius * np.sin(theta) * np.sin(phi)
+ez = earthRadius * np.cos(theta)
+
+
 # Calculate B-field
-m = np.array([0,0,2])
 mr = calcMdotRhat(m, x_hat, y_hat, z_hat)
 bx, by, bz = calcBfield(r, x_hat, y_hat, z_hat, m, mr)
 
@@ -52,45 +55,40 @@ bx, by, bz = calcBfield(r, x_hat, y_hat, z_hat, m, mr)
 del m, mr, x_hat, y_hat, z_hat
 
 # Plot
-fig = figure(1, size=(400, 400), bgcolor=(1, 1, 1), fgcolor=(0, 0, 0)) # figure with white background
-fig.scene.y_plus_view() # see from Y-axis
+fig = figure(size=(720,720))
+# B-field
+quiver3d(x, y, z, bx, by, bz)
+# earth
+mesh(ex, ey, ez, color=(0, 0, 0))
+# viewing
+fig.scene.background = (1,1,1) # white background
+fig.scene.y_plus_view()   # see from Y-axis
 fig.scene.camera.roll(90) # roll north to point upwards
 fig.scene.show_axes = True
-#quiver3d(x,y,z,bx,by,bz)
-flow(x,y,z,bx,by,bz,integration_direction='both')
-streamline = engine.scenes[0].children[0].children[0].children[0].children[0]
-streamline.seed.widget.phi_resolution = 5
-streamline.seed.widget.theta_resolution = 10
-streamline.seed.widget.center = array([-0.        , -0.46153846, -0.46153846])
-streamline.seed.widget.center = array([-0.        ,  0.        , -0.46153846])
-streamline.seed.widget.center = array([-0.,  0.,  0.])
-streamline.seed.widget.center = array([-0.,  0.,  0.])
-streamline.seed.widget.handle_direction = array([ 0.,  0.,  0.])
-streamline.seed.widget.handle_direction = array([ 0.,  0.,  0.])
-streamline.seed.widget.radius = 12.0
-scene = engine.scenes[0]
-scene.scene.camera.position = [0.0, 117.39085287969561, 0.0]
-scene.scene.camera.focal_point = [0.0, 0.0, 0.0]
-scene.scene.camera.view_angle = 30.0
-scene.scene.camera.view_up = [2.2204460492503131e-16, 0.0, 1.0]
-scene.scene.camera.clipping_range = [70.141001376808077, 178.03865934697859]
-scene.scene.camera.compute_view_plane_normal()
-scene.scene.render()
-streamline.stream_tracer.start_position = array([ 0.,  0.,  0.])
-streamline.stream_tracer.progress = 1.0
-streamline.stream_tracer.integration_direction = 'both'
+fig.scene.camera.zoom(1.3)
+
 
 # prevent segfautl (malloc too large) on osx
 vectors = fig.children[0].children[0].children[0]
-vectors.glyph.mask_points.maximum_number_of_points = 1000
+vectors.glyph.mask_points.maximum_number_of_points = 1800
 
 # make pretier
 vectors.glyph.glyph.scaling = True
-vectors.glyph.glyph.range = np.array([-2.,  4.])
-vectors.glyph.glyph.scale_factor = 10.0
+vectors.glyph.glyph.range = np.array([  1.00000000e-05,   1.00000000e-03])
+vectors.glyph.glyph.scale_factor = 3.0
+vectors.glyph.mask_points.proportional_maximum_number_of_points = True
+vectors.glyph.mask_points.generate_vertices = True
 vectors.glyph.mask_input_points = True
 
-
-
-#mayavi.tools.pipeline.vector_field(x,y,z,bx,by,bz)
-
+# save pictures for animation, dont run at default
+def createAnimation():
+    for i in range(360):
+        fig.scene.camera.azimuth(1)
+        filename = `i` + '.png'
+        savefig(filename, size=(720,720))
+def createAnimation2():
+    for i in range(360,720):
+        fig.scene.camera.elevation(1)
+        fig.scene.camera.orthogonalize_view_up() # http://public.kitware.com/pipermail/vtkusers/2003-July/018794.html
+        filename = `i` + '.png'
+        savefig(filename, size=(720,720))

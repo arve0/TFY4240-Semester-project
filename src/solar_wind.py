@@ -26,36 +26,51 @@ def calcBfield(r, x_hat, y_hat, z_hat, m, mr):
     bz = r**-3*(3*mr*z_hat-m[2])
     return np.array([ bx, by, bz ])
 
-def solarWind(x0,y0,z0,v0):
+def particleTrajectory(x0,y0,z0,v0,k):
     # constants
     m = np.array([-2*np.sin(13./180*np.pi),0,2*np.cos(13./180*np.pi)]) # rot tilt ~23deg, mag tilt ~10deg from rot -> ~13deg from z-axis
-    k = 2 # q/m
-    # Initial conditions
-    n = 6000 # number of iterations
+    n = 10000 # max number of iterations (if not out of bounds)
+    limit = np.max(np.abs([x0,y0,z0]))+1 # max x,y or z coordinate
+    dt = 50/720/np.linalg.norm(v0) # from -25 to 25, at 720 pixels, expect resolution ~50/720=v0*dt
+    # arrays for particle trajectory
     v = np.zeros((n, 3))
     x = np.zeros(n)
     y = np.zeros(n)
     z = np.zeros(n)
+    # Initial conditions
     v[0] = v0 # initial speed
     x[0] = x0 # initial position
     y[0] = y0
     z[0] = z0
-    dt = 1
     # F = q (v x B), F = ma, v = v0 + a*dt
     # a = q/m (v x B) = k(vxB)
     # -> v = v0 + k(vxB)dt
     # r = r + v*dt = r + v0*dt + k(vxB)*dt^2
 
+    #print 'Limit:' + `limit` #debug
+    
     for i in range(n-1):
         r, x_hat, y_hat, z_hat = makeRcoordinates(x[i],y[i],z[i])
         mr = calcMdotRhat(m, x_hat, y_hat, z_hat)
         B = calcBfield(r, x_hat, y_hat, z_hat, m, mr)
-        vxB = k*np.cross(v[i],B)
+        vxB = k * np.cross(v[i],B)
         v[i+1] = v[i] + vxB*dt
         x[i+1] = x[i] + v[i,0]*dt
         y[i+1] = y[i] + v[i,1]*dt
         z[i+1] = z[i] + v[i,2]*dt
-
+        x_max = np.max(np.abs(x))
+        y_max = np.max(np.abs(y))
+        z_max = np.max(np.abs(z))
+        if (x_max > limit or y_max > limit or z_max > limit):
+            # dont continue when particle "get lost"
+            #print 'Breaking with position: ' + `x_max`, `y_max`, `z_max` #debug
+            #print 'Iteration numer: ' + `i`
+            x=x[0:i]
+            y=y[0:i]
+            z=z[0:i]
+            v=v[0:i]
+            break
+    # plot
     surface = plot3d(x,y,z)
     #visibility
     surface.actor.mapper.scalar_range = np.array([ 0.,  1.])
@@ -64,14 +79,31 @@ def solarWind(x0,y0,z0,v0):
     surface.actor.property.diffuse_color = (1.0, 0.7250934615091172, 0.0)
     surface.actor.property.ambient_color = (1.0, 0.7250934615091172, 0.0)
     surface.actor.property.color = (1.0, 0.7250934615091172, 0.0)
-    surface.actor.property.point_size = 10.0
+    surface.actor.property.point_size = 2.0
+    surface.actor.property.representation = 'points'
+    # debug
+    #print 'First: ' + `x[0]`, `y[0]`, `z[0]` 
+    #print 'Last: ' + `x[-1]`, `y[-1]`, `z[-1]`
+    v_last = np.linalg.norm(v[-2])
+    v_first = np.linalg.norm(v[0])
+    v_diff = v_first - v_last
+    v_diff_percent = v_diff / v_first * 100
+    print 'Percentage difference in start/end velocity: ' + `v_diff_percent` + '%'
 
-#x0=25
-#y0=0
-#z0=-25
-#for i in range(np.absolute(2*z0)):
-#    solarWind(x0,y0,z0+i)
-v0 = np.array([-1e-2,0,-1e-2])
-for i in range(15):
-    for j in range(15):
-        solarWind(15,i,j,v0)
+x0 = 25
+start = -8      # y0,z0
+v0 = 400/6371*10 # v=400km/s, rEarth=6371km, rEarth is 10 in mgrid.py
+k0 = 2e2
+it = 4      # number of points in grid
+
+# do several trajectories to find sweet spot to start
+for i in range(it):
+    for j in range(it):
+        for l in range(10):
+            k=k0+l*10
+            y0 = start - 2*start/(it-1)*i
+            z0 = start - 2*start/(it-1)*j
+            r = (x0**2 + y0**2 + z0**2)**0.5
+            r_hat = np.array([ x0/r, y0/r, z0/r ])
+            v = -r_hat*v0 # direction straight at earth
+            particleTrajectory(x0,y0,z0,np.array([-v0,0,0]),k)
