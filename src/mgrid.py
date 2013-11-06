@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 'A model of the earth and its magnetic field, with earth center as origin.'
 
+from __future__ import division # avoid integer division
 import numpy as np
 import mayavi
 from mayavi.mlab import *
-from mayavi.api import Engine
-
 
 def makeRcoordinates(x,y,z):
     '''Makes r length and r^hat from coordinates'''
@@ -31,10 +30,12 @@ def calcBfield(r, x_hat, y_hat, z_hat, m, mr):
     bz[np.isnan(bz)] = 0
     return bx, by, bz
 
-earthRadius = 12
+# Constants
+earthRadius = 10      # outer core about 5e3km below surface -> ratio m/r~0.2
+m = np.array([2*np.sin(13./180*np.pi),0,2*np.cos(13./180*np.pi)]) # rot tilt ~23deg, mag tilt ~10deg from rot -> ~13deg from z-axis
 
 # Create grid
-n = 13. # 0.5x number of steps
+n = 13 # 0.5x number of steps
 steps = earthRadius / n
 x,y,z = np.mgrid[-2*earthRadius:2*earthRadius:steps,-2*earthRadius:2*earthRadius:steps,-2*earthRadius:2*earthRadius:steps]
 r,x_hat,y_hat,z_hat = makeRcoordinates(x,y,z)
@@ -47,7 +48,6 @@ ez = earthRadius * np.cos(theta)
 
 
 # Calculate B-field
-m = np.array([0,0,2])
 mr = calcMdotRhat(m, x_hat, y_hat, z_hat)
 bx, by, bz = calcBfield(r, x_hat, y_hat, z_hat, m, mr)
 
@@ -55,16 +55,17 @@ bx, by, bz = calcBfield(r, x_hat, y_hat, z_hat, m, mr)
 del m, mr, x_hat, y_hat, z_hat
 
 # Plot
-clf()
 fig = figure(size=(720,720))
-fig.scene.background = (1,1,1) # white background
-fig.scene.y_plus_view()   # see from Y-axis
-fig.scene.camera.roll(90) # roll north to point upwards
-fig.scene.show_axes = True
 # B-field
 quiver3d(x, y, z, bx, by, bz)
 # earth
 mesh(ex, ey, ez, color=(0, 0, 0))
+# viewing
+fig.scene.background = (1,1,1) # white background
+fig.scene.y_plus_view()   # see from Y-axis
+fig.scene.camera.roll(90) # roll north to point upwards
+fig.scene.show_axes = True
+fig.scene.camera.zoom(1.3)
 
 
 # prevent segfautl (malloc too large) on osx
@@ -77,9 +78,15 @@ vectors.glyph.glyph.range = np.array([-2.,  4.])
 vectors.glyph.glyph.scale_factor = 10.0
 vectors.glyph.mask_input_points = True
 
-# save pictures for animation
+# save pictures for animation, dont run at default
 def createAnimation():
     for i in range(360):
         fig.scene.camera.azimuth(1)
+        filename = `i` + '.png'
+        savefig(filename, size=(720,720))
+def createAnimation2():
+    for i in range(360,720):
+        fig.scene.camera.elevation(1)
+        fig.scene.camera.orthogonalize_view_up() # http://public.kitware.com/pipermail/vtkusers/2003-July/018794.html
         filename = `i` + '.png'
         savefig(filename, size=(720,720))
