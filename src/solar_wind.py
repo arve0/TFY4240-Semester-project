@@ -26,10 +26,10 @@ def calcBfield(r, x_hat, y_hat, z_hat, m, mr):
     bz = r**-3*(3*mr*z_hat-m[2])
     return np.array([ bx, by, bz ])
 
-def particleTrajectory(x0,y0,z0,v0,k):
+def particleTrajectory(x0,y0,z0,v0,k,n):
     # constants
     m = np.array([-2*np.sin(13./180*np.pi),0,2*np.cos(13./180*np.pi)]) # rot tilt ~23deg, mag tilt ~10deg from rot -> ~13deg from z-axis
-    n = 10000 # max number of iterations (if not out of bounds)
+    #n = 10000 # max number of iterations (if not out of bounds)
     limit = np.max(np.abs([x0,y0,z0]))+1 # max x,y or z coordinate
     dt = 50/720/np.linalg.norm(v0) # from -25 to 25, at 720 pixels, expect resolution ~50/720=v0*dt
     # arrays for particle trajectory
@@ -64,12 +64,12 @@ def particleTrajectory(x0,y0,z0,v0,k):
         if (x_max > limit or y_max > limit or z_max > limit):
             # dont continue when particle "get lost"
             #print 'Breaking with position: ' + `x_max`, `y_max`, `z_max` #debug
-            #print 'Iteration numer: ' + `i`
             x=x[0:i]
             y=y[0:i]
             z=z[0:i]
             v=v[0:i]
             break
+    print 'Iteration numer: ' + `i`
     # plot
     surface = plot3d(x,y,z)
     #visibility
@@ -91,19 +91,22 @@ def particleTrajectory(x0,y0,z0,v0,k):
     print 'Percentage difference in start/end velocity: ' + `v_diff_percent` + '%'
 
 x0 = 25
-start = -8      # y0,z0
+z0 = -25
+y0 = 0
+start = -25      # y0,z0
 v0 = 400/6371*10 # v=400km/s, rEarth=6371km, rEarth is 10 in mgrid.py
-k0 = 2e2
-it = 4      # number of points in grid
+k = 2e2
+it = 6      # number of points in grid
+n = 10000   # max iterations
+step = 10
 
 # do several trajectories to find sweet spot to start
-for i in range(it):
-    for j in range(it):
-        for l in range(10):
-            k=k0+l*10
-            y0 = start - 2*start/(it-1)*i
-            z0 = start - 2*start/(it-1)*j
-            r = (x0**2 + y0**2 + z0**2)**0.5
-            r_hat = np.array([ x0/r, y0/r, z0/r ])
-            v = -r_hat*v0 # direction straight at earth
-            particleTrajectory(x0,y0,z0,np.array([-v0,0,0]),k)
+j = 0
+for i in range(100,n,step):
+    j+=1
+    r = (x0**2 + y0**2 + z0**2)**0.5
+    r_hat = np.array([ x0/r, y0/r, z0/r ])
+    v = -r_hat*v0 # direction straight at earth
+    surface = particleTrajectory(x0,y0,z0,v,k,i)
+    savefig(`j` + '.png')
+    surface.remove()

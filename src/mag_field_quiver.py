@@ -57,9 +57,9 @@ del m, mr, x_hat, y_hat, z_hat
 # Plot
 fig = figure(size=(720,720))
 # B-field
-quiver3d(x, y, z, bx, by, bz)
+vectorField = quiver3d(x, y, z, bx, by, bz)
 # earth
-mesh(ex, ey, ez, color=(0, 0, 0))
+earthSurface = mesh(ex, ey, ez, color=(0, 0, 0))
 # viewing
 fig.scene.background = (1,1,1) # white background
 fig.scene.y_plus_view()   # see from Y-axis
