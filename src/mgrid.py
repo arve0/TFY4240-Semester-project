@@ -32,7 +32,7 @@ def calcBfield(r, x_hat, y_hat, z_hat, m, mr):
 
 # Constants
 earthRadius = 10      # outer core about 5e3km below surface -> ratio m/r~0.2
-m = np.array([2*np.sin(13./180*np.pi),0,2*np.cos(13./180*np.pi)]) # rot tilt ~23deg, mag tilt ~10deg from rot -> ~13deg from z-axis
+m = np.array([-2*np.sin(13./180*np.pi),0,2*np.cos(13./180*np.pi)]) # rot tilt ~23deg, mag tilt ~10deg from rot -> ~13deg from z-axis
 
 # Create grid
 n = 13 # 0.5x number of steps
@@ -41,7 +41,7 @@ x,y,z = np.mgrid[-2*earthRadius:2*earthRadius:steps,-2*earthRadius:2*earthRadius
 r,x_hat,y_hat,z_hat = makeRcoordinates(x,y,z)
 
 # create earth
-theta, phi = np.mgrid[0:np.pi:11j, 0:np.pi*2:11j]
+theta, phi = np.mgrid[0:np.pi:11j, 0:np.pi*2:21j]
 ex = earthRadius * np.sin(theta) * np.cos(phi)
 ey = earthRadius * np.sin(theta) * np.sin(phi)
 ez = earthRadius * np.cos(theta)
@@ -70,12 +70,14 @@ fig.scene.camera.zoom(1.3)
 
 # prevent segfautl (malloc too large) on osx
 vectors = fig.children[0].children[0].children[0]
-vectors.glyph.mask_points.maximum_number_of_points = 1000
+vectors.glyph.mask_points.maximum_number_of_points = 1800
 
 # make pretier
 vectors.glyph.glyph.scaling = True
-vectors.glyph.glyph.range = np.array([-2.,  4.])
-vectors.glyph.glyph.scale_factor = 10.0
+vectors.glyph.glyph.range = np.array([  1.00000000e-05,   1.00000000e-03])
+vectors.glyph.glyph.scale_factor = 3.0
+vectors.glyph.mask_points.proportional_maximum_number_of_points = True
+vectors.glyph.mask_points.generate_vertices = True
 vectors.glyph.mask_input_points = True
 
 # save pictures for animation, dont run at default
