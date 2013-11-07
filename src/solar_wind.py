@@ -89,6 +89,7 @@ def particleTrajectory(x0,y0,z0,v0,k,n):
     v_diff = v_first - v_last
     v_diff_percent = v_diff / v_first * 100
     print 'Percentage difference in start/end velocity: ' + `v_diff_percent` + '%'
+    return surface
 
 x0 = 25
 z0 = -25
