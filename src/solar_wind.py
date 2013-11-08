@@ -30,7 +30,7 @@ def particleTrajectory(x0,y0,z0,v0,k,maxIterations):
     '''Calculate particle trajectory, with starting posistion x0,y0,z0, starting velocity v0, numerical factor k (k*(vxB)), and maximum number of iterations.'''
     # constants
     m = np.array([-2*np.sin(13./180*np.pi),0,2*np.cos(13./180*np.pi)]) # rot tilt ~23deg, mag tilt ~10deg from rot -> ~13deg from z-axis
-    limit = np.max(np.abs([x0,y0,z0])) # max x,y or z coordinate
+    limit = 1+np.max(np.abs([x0,y0,z0])) # max x,y or z coordinate
     dt = 50/720/np.linalg.norm(v0) # from -25 to 25, at 720 pixels, expect resolution ~50/720=v0*dt
     # arrays for particle trajectory
     v = np.zeros((maxIterations, 3))
@@ -64,10 +64,10 @@ def particleTrajectory(x0,y0,z0,v0,k,maxIterations):
         if (x_max > limit or y_max > limit or z_max > limit):
             # dont continue when particle "get lost"
             #print 'Breaking with position: ' + `x_max`, `y_max`, `z_max` #debug
-            x=x[0:i]
-            y=y[0:i]
-            z=z[0:i]
-            v=v[0:i]
+            x=x[0:i+1]
+            y=y[0:i+1]
+            z=z[0:i+1]
+            v=v[0:i+1]
             break
     #print 'Iteration numer: ' + `i`
     # plot
@@ -84,7 +84,7 @@ def particleTrajectory(x0,y0,z0,v0,k,maxIterations):
     # debug
     #print 'First: ' + `x[0]`, `y[0]`, `z[0]` 
     #print 'Last: ' + `x[-1]`, `y[-1]`, `z[-1]`
-    v_last = np.linalg.norm(v[-2])
+    v_last = np.linalg.norm(v[-1])
     v_first = np.linalg.norm(v[0])
     v_diff = v_first - v_last
     v_diff_percent = v_diff / v_first * 100
@@ -120,6 +120,62 @@ def trajectoryAnimation():
                 surface.remove()
                 fig.scene.camera.elevation(1)
                 fig.scene.camera.orthogonalize_view_up() # http://public.kitware.com/pipermail/vtkusers/2003-July/018794.html
+
+def xTowards():
+    '''Plot all trajectories in yz-plane, where x=25'''
+    x0 = 25
+    start = -25      # y0,z0
+    v0 = 400/6371*10 # v=400km/s, rEarth=6371km, rEarth is 10 in mgrid.py
+    k = 2e2
+    it = 4      # number of points in grid
+    maxIterations = 10000   # max iterations
+    step = 10
+
+    # plot all trajectories
+    for i in range(it): #several starting points
+        for j in range(it):
+            y0 = start + 50*i/it
+            z0 = start + 50*j/it
+            r = (x0**2 + y0**2 + z0**2)**0.5
+            r_hat = np.array([ x0/r, y0/r, z0/r ])
+            v = -r_hat*v0 # direction straight at earth
+            surface, num = particleTrajectory(x0,y0,z0,v,k,maxIterations)
+
+def xStraigth():
+    '''Plot all trajectories in yz-plane, where x=25'''
+    x0 = 25
+    start = -25      # y0,z0
+    v0 = 400/6371*10 # v=400km/s, rEarth=6371km, rEarth is 10 in mgrid.py
+    k = 2e2
+    it = 4      # number of points in grid
+    maxIterations = 10000   # max iterations
+    step = 10
+
+    # plot all trajectories
+    for i in range(it): #several starting points
+        for j in range(it):
+            y0 = start + 50*i/it
+            z0 = start + 50*j/it
+            v = np.array([-v0,0,0])
+            surface, num = particleTrajectory(x0,y0,z0,v,k,maxIterations)
+
+def zStraight():
+    '''Plot all trajectories in yz-plane, where x=25'''
+    x0 = 25
+    start = -25      # y0,z0
+    v0 = 400/6371*10 # v=400km/s, rEarth=6371km, rEarth is 10 in mgrid.py
+    k = 2e2
+    it = 4      # number of points in grid
+    maxIterations = 10000   # max iterations
+    step = 10
+
+    # plot all trajectories
+    for i in range(it): #several starting points
+        for j in range(it):
+            y0 = start + 50*i/it
+            z0 = start + 50*j/it
+            v = np.array([0,0,-v0])
+            surface, num = particleTrajectory(z0,y0,x0,v,k,maxIterations)
                 
                 
 # create earth
