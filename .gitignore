@@ -4,4 +4,4 @@ src/*.pdf
 *.swn
 examples/*
 [0-9]*.png
-results/*
+*mp4
