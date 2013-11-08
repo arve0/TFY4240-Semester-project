@@ -81,12 +81,11 @@ vectors.glyph.mask_points.generate_vertices = True
 vectors.glyph.mask_input_points = True
 
 # save pictures for animation, dont run at default
-def createAnimation():
+def bFieldAnimation():
     for i in range(360):
         fig.scene.camera.azimuth(1)
         filename = `i` + '.png'
         savefig(filename, size=(720,720))
-def createAnimation2():
     for i in range(360,720):
         fig.scene.camera.elevation(1)
         fig.scene.camera.orthogonalize_view_up() # http://public.kitware.com/pipermail/vtkusers/2003-July/018794.html
