@@ -141,6 +141,26 @@ def xTowards():
             v = -r_hat*v0 # direction straight at earth
             surface, num = particleTrajectory(x0,y0,z0,v,k,maxIterations)
 
+def zTowards():
+    '''Plot all trajectories in yz-plane, where x=25'''
+    x0 = 25
+    start = -25      # y0,z0
+    v0 = 400/6371*10 # v=400km/s, rEarth=6371km, rEarth is 10 in mgrid.py
+    k = 2e2
+    it = 4      # number of points in grid
+    maxIterations = 10000   # max iterations
+    step = 10
+
+    # plot all trajectories
+    for i in range(it): #several starting points
+        for j in range(it):
+            y0 = start + 50*i/it
+            z0 = start + 50*j/it
+            r = (x0**2 + y0**2 + z0**2)**0.5
+            r_hat = np.array([ x0/r, y0/r, z0/r ])
+            v = -r_hat*v0 # direction straight at earth
+            surface, num = particleTrajectory(z0,y0,x0,v,k,maxIterations)
+
 def xStraigth():
     '''Plot all trajectories in yz-plane, where x=25'''
     x0 = 25

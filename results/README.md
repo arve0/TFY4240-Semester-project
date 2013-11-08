@@ -17,5 +17,6 @@ Different trajectories
 ![alt tag](https://raw.github.com/arve0/TFY4240-Semester-project/master/results/x-straight.png)
 ![alt tag](https://raw.github.com/arve0/TFY4240-Semester-project/master/results/z-straight.png)
 ![alt tag](https://raw.github.com/arve0/TFY4240-Semester-project/master/results/x-toward-center.png)
+![alt tag](https://raw.github.com/arve0/TFY4240-Semester-project/master/results/z-toward-center.png)
 ![alt tag](https://raw.github.com/arve0/TFY4240-Semester-project/master/results/toward-pole.png)
 
