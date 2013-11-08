@@ -5,3 +5,11 @@ src/*.pdf
 examples/*
 [0-9]*.png
 *mp4
+src/*png
+src/report.aux
+src/report.dvi
+src/report.fls
+src/report.log
+src/report.out
+src/report.toc
+src/report.fdb*
